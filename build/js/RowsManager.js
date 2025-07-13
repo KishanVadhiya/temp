@@ -4,6 +4,8 @@ import { RowsCanvas } from "./RowsCanvas.js";
  * and resizing behavior for a large number of rows by dynamically mounting and unmounting row blocks.
  */
 export class RowsManager {
+    /** @type {UndoRedoManager} Instance of UndoRedoManager for managing undo/redo operations */
+    // private undoRedoManager: UndoRedoManager;
     /**
      * Initializes a scrollable manager for row canvas blocks
      * @param {RowData} rowHeights - Map of row custom heights.
@@ -18,12 +20,12 @@ export class RowsManager {
      * @param {number} [defaultWidth=50] - Default row width (pixels).
      * @param {NumberObj} [marginTop={ value: 0 }] - Global object for managing vertical scroll offset.
      */
-    constructor(rowHeights, startRowIdx, visibleRowCnt, ifResizeOn, ifResizePointerDown, selectionCoordinates, undoRedoManager, rowCanvasLimit = 40000, defaultHeight = 25, defaultWidth = 50, marginTop = { value: 0 }) {
+    constructor(rowHeights, startRowIdx, visibleRowCnt, selectionCoordinates, rowCanvasLimit = 40000, defaultHeight = 25, defaultWidth = 50, marginTop = { value: 0 }) {
         this.rowHeights = rowHeights;
-        this.undoRedoManager = undoRedoManager;
-        this._ifResizeOn = ifResizeOn;
-        this.currentResizingRow = { value: -1 }; // Initialize with a default invalid value
-        this._ifResizePointerDown = ifResizePointerDown;
+        // this.undoRedoManager = undoRedoManager;
+        // this._ifResizeOn = ifResizeOn;
+        // this.currentResizingRow = { value: -1 }; // Initialize with a default invalid value
+        // this._ifResizePointerDown = ifResizePointerDown;
         this.startRowIdx = startRowIdx;
         this.rowCanvasLimit = rowCanvasLimit;
         this.visibleRowCnt = visibleRowCnt;
@@ -43,17 +45,16 @@ export class RowsManager {
      * This getter determines which of the visible row canvases is being interacted with for resizing.
      * @returns {RowsCanvas} The RowsCanvas instance currently being resized.
      */
-    get currentResizingRowCanvas() {
-        let idx = 0;
-        // Calculate the index within the visibleRows array based on the currentResizingRow value
-        if (this.currentResizingRow.value === -1) {
-            // alert("something went wrong"); // Consider using a more robust error handling mechanism
-        }
-        else {
-            idx = this.currentResizingRow.value - this.visibleRows[0].rowID;
-        }
-        return this.visibleRows[idx];
-    }
+    // get currentResizingRowCanvas(): RowsCanvas {
+    //     let idx = 0;
+    //     // Calculate the index within the visibleRows array based on the currentResizingRow value
+    //     if (this.currentResizingRow.value === -1) {
+    //         // alert("something went wrong"); // Consider using a more robust error handling mechanism
+    //     } else {
+    //         idx = this.currentResizingRow.value - this.visibleRows[0].rowID;
+    //     }
+    //     return this.visibleRows[idx];
+    // }
     /**
      * Scrolls row view down by one block and mounts a new row at the bottom.
      * @returns {boolean} True if scrolling occurred, false if at the bottommost limit.
@@ -88,7 +89,11 @@ export class RowsManager {
         for (let i = 0; i < this.visibleRowCnt; i++) {
             const rowIdx = i + this.startRowIdx; // Calculate the global row group index
             // Create a new RowsCanvas instance
-            const canvas = new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight, this._ifResizeOn, this._ifResizePointerDown, this.currentResizingRow, this.selectionCoordinates);
+            const canvas = new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight, 
+            // this._ifResizeOn,
+            // this._ifResizePointerDown,
+            // this.currentResizingRow,
+            this.selectionCoordinates);
             this.visibleRows.push(canvas); // Add to the array of visible canvases
             this.rowsPositionPrefixSumArr.push(canvas.rowsPositionArr); // Store its prefix sum array
             this.rowsDivArr.push(canvas.rowCanvasDiv); // Store its div element
@@ -102,7 +107,11 @@ export class RowsManager {
     mountRowBottom() {
         const rowIdx = this.startRowIdx + this.visibleRowCnt - 1; // Calculate the index for the new row group
         // Create a new RowsCanvas instance for the new row group
-        const canvas = new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight, this._ifResizeOn, this._ifResizePointerDown, this.currentResizingRow, this.selectionCoordinates);
+        const canvas = new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight, 
+        // this._ifResizeOn,
+        // this._ifResizePointerDown,
+        // this.currentResizingRow,
+        this.selectionCoordinates);
         this.visibleRows.push(canvas); // Add to the end of the visible canvases array
         this.rowsPositionPrefixSumArr.push(canvas.rowsPositionArr); // Add its prefix sum array
         this.rowsDivArr.push(canvas.rowCanvasDiv); // Add its div element
@@ -115,7 +124,7 @@ export class RowsManager {
     mountRowTop() {
         const rowIdx = this.startRowIdx; // The index for the new row group
         // Create a new RowsCanvas instance for the new row group
-        const canvas = new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight, this._ifResizeOn, this._ifResizePointerDown, this.currentResizingRow, this.selectionCoordinates);
+        const canvas = new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight, this.selectionCoordinates);
         this.visibleRows.unshift(canvas); // Add to the beginning of the visible canvases array
         this.rowsPositionPrefixSumArr.unshift(canvas.rowsPositionArr); // Add its prefix sum array to the beginning
         this.rowsDivArr.unshift(canvas.rowCanvasDiv); // Add its div element to the beginning
@@ -129,6 +138,7 @@ export class RowsManager {
      * This is typically called during vertical scrolling down.
      */
     unmountRowTop() {
+        console.log("unmounted the top div .....................");
         // Add the height of the unmounted canvas to the top margin to simulate scrolling
         this.marginTop.value += this.rowsPositionPrefixSumArr[0][24];
         this.rowsDivContainer.style.marginTop = `${this.marginTop.value}px`; // Apply the new margin

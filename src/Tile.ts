@@ -3,7 +3,7 @@ import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinat
 
 /**
  * Represents a single tile (cell group) in a grid system composed of 25 rows and 25 columns.
- * Responsible for rendering the grid lines within this tile using canvas.
+ * Responsible for rendering the grid lines within this tile using canvas with DPR optimization.
  */
 export class Tile {
     /** Row index of this tile (e.g., 0-based tile row in a large grid layout) */
@@ -33,6 +33,9 @@ export class Tile {
     /** Input element for editing cell values */
     readonly inputDiv: HTMLInputElement = document.createElement("input");
 
+    /** Device pixel ratio for high-resolution display support */
+    private dpr: number = window.devicePixelRatio || 1;
+
     /**
      * Initializes a new Tile instance for a specific (row, col) position
      * @param row - The row index of the tile
@@ -58,9 +61,17 @@ export class Tile {
      * Also renders the selection highlight, cell text, and handles input tag
      */
     drawGrid() {
-        // Set canvas size based on 25 rows and columns using position arrays
-        this.tileCanvas.width = this.colsPositionArr[24];
-        this.tileCanvas.height = this.rowsPositionArr[24];
+        // Set canvas logical size based on 25 rows and columns using position arrays
+        const logicalWidth = this.colsPositionArr[24];
+        const logicalHeight = this.rowsPositionArr[24];
+
+        // Set canvas display size (CSS pixels)
+        this.tileCanvas.style.width = `${logicalWidth}px`;
+        this.tileCanvas.style.height = `${logicalHeight}px`;
+
+        // Set canvas actual size (device pixels)
+        this.tileCanvas.width = logicalWidth * this.dpr;
+        this.tileCanvas.height = logicalHeight * this.dpr;
 
         // Add row and column attributes for reference
         this.tileCanvas.setAttribute("row", `${this.row}`);
@@ -68,17 +79,20 @@ export class Tile {
 
         const ctx = this.tileCanvas.getContext("2d") as CanvasRenderingContext2D;
 
+        // Scale context to handle DPR
+        ctx.scale(this.dpr, this.dpr);
+
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.strokeStyle = "#ddd"; // Light gray for grid lines
 
         // Draw horizontal and vertical grid lines for all 25 boundaries
         for (let i = 0; i < 25; i++) {
-            // Horizontal line at row boundary
+            // Horizontal line at row boundary (adjust by 0.5 for crisp lines)
             ctx.moveTo(0, this.rowsPositionArr[i] - 0.5);
             ctx.lineTo(this.colsPositionArr[24], this.rowsPositionArr[i] - 0.5);
 
-            // Vertical line at column boundary
+            // Vertical line at column boundary (adjust by 0.5 for crisp lines)
             ctx.moveTo(this.colsPositionArr[i] - 0.5, 0);
             ctx.lineTo(this.colsPositionArr[i] - 0.5, this.rowsPositionArr[24]);
         }
@@ -283,5 +297,17 @@ export class Tile {
         }
 
         ctx.stroke();
+    }
+
+    /**
+     * Updates the tile when DPR changes (e.g., when moving between displays)
+     * Call this method when you detect a DPR change
+     */
+    updateDPR() {
+        const newDPR = window.devicePixelRatio || 1;
+        if (newDPR !== this.dpr) {
+            this.dpr = newDPR;
+            this.drawGrid(); // Redraw with new DPR
+        }
     }
 }

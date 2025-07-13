@@ -1,9 +1,9 @@
 import { RowData } from "./types/RowsColumn.js";
 import { RowsCanvas } from "./RowsCanvas.js";
-import { BooleanObj } from "./types/BooleanObj.js";
-import { NumberObj } from "./types/NumberObj.js";
+
+// import { NumberObj } from "./types/NumberObj.js";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates.js";
-import { UndoRedoManager } from "./UndoRedoManager/UndoRedoManager.js";
+import { NumberObj } from "./types/NumberObj.js";
 
 /**
  * Manages a scrolling set of visible row canvases, enabling efficient rendering
@@ -44,19 +44,19 @@ export class RowsManager {
     private rowCanvasLimit: number;
 
     /** @type {BooleanObj} Shared boolean flag for showing resize indicator line */
-    private _ifResizeOn: BooleanObj;
+    // private _ifResizeOn: BooleanObj;
 
     /** @type {BooleanObj} Shared boolean flag to track if pointer is down during resize */
-    private _ifResizePointerDown: BooleanObj;
+    // private _ifResizePointerDown: BooleanObj;
 
     /** @type {NumberObj} Currently active resizing row block index */
-    private currentResizingRow: NumberObj;
+    // private currentResizingRow: NumberObj;
 
     /** @type {MultipleSelectionCoordinates} Shared selection coordinates for row highlighting */
     private selectionCoordinates: MultipleSelectionCoordinates;
 
     /** @type {UndoRedoManager} Instance of UndoRedoManager for managing undo/redo operations */
-    private undoRedoManager: UndoRedoManager;
+    // private undoRedoManager: UndoRedoManager;
 
     /**
      * Initializes a scrollable manager for row canvas blocks
@@ -76,20 +76,18 @@ export class RowsManager {
         rowHeights: RowData,
         startRowIdx: number,
         visibleRowCnt: number,
-        ifResizeOn: BooleanObj,
-        ifResizePointerDown: BooleanObj,
         selectionCoordinates: MultipleSelectionCoordinates,
-        undoRedoManager: UndoRedoManager,
+
         rowCanvasLimit: number = 40000,
         defaultHeight: number = 25,
         defaultWidth: number = 50,
-        marginTop: NumberObj = { value: 0 }
+        marginTop = {value:0} 
     ) {
         this.rowHeights = rowHeights;
-        this.undoRedoManager = undoRedoManager;
-        this._ifResizeOn = ifResizeOn;
-        this.currentResizingRow = { value: -1 }; // Initialize with a default invalid value
-        this._ifResizePointerDown = ifResizePointerDown;
+        // this.undoRedoManager = undoRedoManager;
+        // this._ifResizeOn = ifResizeOn;
+        // this.currentResizingRow = { value: -1 }; // Initialize with a default invalid value
+        // this._ifResizePointerDown = ifResizePointerDown;
         this.startRowIdx = startRowIdx;
         this.rowCanvasLimit = rowCanvasLimit;
         this.visibleRowCnt = visibleRowCnt;
@@ -110,16 +108,17 @@ export class RowsManager {
      * This getter determines which of the visible row canvases is being interacted with for resizing.
      * @returns {RowsCanvas} The RowsCanvas instance currently being resized.
      */
-    get currentResizingRowCanvas(): RowsCanvas {
-        let idx = 0;
-        // Calculate the index within the visibleRows array based on the currentResizingRow value
-        if (this.currentResizingRow.value === -1) {
-            // alert("something went wrong"); // Consider using a more robust error handling mechanism
-        } else {
-            idx = this.currentResizingRow.value - this.visibleRows[0].rowID;
-        }
-        return this.visibleRows[idx];
-    }
+    // get currentResizingRowCanvas(): RowsCanvas {
+    //     let idx = 0;
+    //     // Calculate the index within the visibleRows array based on the currentResizingRow value
+    //     if (this.currentResizingRow.value === -1) {
+    //         // alert("something went wrong"); // Consider using a more robust error handling mechanism
+    //     } else {
+    //         idx = this.currentResizingRow.value - this.visibleRows[0].rowID;
+    //     }
+    //     return this.visibleRows[idx];
+    // }
+
 
     /**
      * Scrolls row view down by one block and mounts a new row at the bottom.
@@ -160,9 +159,9 @@ export class RowsManager {
                 this.rowHeights,
                 this.defaultWidth,
                 this.defaultHeight,
-                this._ifResizeOn,
-                this._ifResizePointerDown,
-                this.currentResizingRow,
+                // this._ifResizeOn,
+                // this._ifResizePointerDown,
+                // this.currentResizingRow,
                 this.selectionCoordinates,
             );
 
@@ -186,9 +185,9 @@ export class RowsManager {
             this.rowHeights,
             this.defaultWidth,
             this.defaultHeight,
-            this._ifResizeOn,
-            this._ifResizePointerDown,
-            this.currentResizingRow,
+            // this._ifResizeOn,
+            // this._ifResizePointerDown,
+            // this.currentResizingRow,
             this.selectionCoordinates,
         );
 
@@ -211,9 +210,6 @@ export class RowsManager {
             this.rowHeights,
             this.defaultWidth,
             this.defaultHeight,
-            this._ifResizeOn,
-            this._ifResizePointerDown,
-            this.currentResizingRow,
             this.selectionCoordinates,
         );
 
@@ -232,6 +228,7 @@ export class RowsManager {
      * This is typically called during vertical scrolling down.
      */
     private unmountRowTop(): void {
+        console.log("unmounted the top div .....................");
         // Add the height of the unmounted canvas to the top margin to simulate scrolling
         this.marginTop.value += this.rowsPositionPrefixSumArr[0][24];
         this.rowsDivContainer.style.marginTop = `${this.marginTop.value}px`; // Apply the new margin

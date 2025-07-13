@@ -17,11 +17,8 @@ export class ColumnsManager {
      * @param {number} [defaultWidth=100] - Default width for columns.
      * @param {NumberObj} [marginLeft={ value: 0 }] - Initial left margin for the columns container.
      */
-    constructor(columnWidths, startColumnIdx, visibleColumnCnt, ifResizeOn, ifResizePointerDown, selectionCoordinates, columnCanvasLimit = 40, defaultHeight = 25, defaultWidth = 100, marginLeft = { value: 0 }) {
+    constructor(columnWidths, startColumnIdx, visibleColumnCnt, selectionCoordinates, columnCanvasLimit = 40, defaultHeight = 25, defaultWidth = 100, marginLeft = { value: 0 }) {
         this.columnWidths = columnWidths;
-        this._ifResizeOn = ifResizeOn;
-        this.currentResizingColumn = { value: -1 }; // Initialize with a default invalid value
-        this._ifResizePointerDown = ifResizePointerDown;
         this.startColumnIdx = startColumnIdx;
         this.columnCanvasLimit = columnCanvasLimit;
         this.visibleColumnCnt = visibleColumnCnt;
@@ -35,19 +32,14 @@ export class ColumnsManager {
         this.columnsDivContainer = document.getElementById("columnsRow");
         this.initialLoad(); // Perform initial loading of column canvases
     }
+    // getMarginLeft(){
+    //     return this.marginLeft;
+    // }
     /**
      * Returns the ColumnsCanvas instance for the currently resizing column group.
      * This getter determines which of the visible column canvases is being interacted with for resizing.
      * @returns {ColumnsCanvas} The ColumnsCanvas instance currently being resized.
      */
-    get currentResizingColumnCanvas() {
-        let idx = 0;
-        // Calculate the index within the visibleColumns array based on the currentResizingColumn value
-        if (this.currentResizingColumn.value !== -1) {
-            idx = this.currentResizingColumn.value - this.visibleColumns[0].columnID;
-        }
-        return this.visibleColumns[idx];
-    }
     /**
      * Scrolls the columns display to the right by unmounting the leftmost column group
      * and mounting a new column group on the right.
@@ -84,7 +76,7 @@ export class ColumnsManager {
         for (let j = 0; j < this.visibleColumnCnt; j++) {
             const colIdx = j + this.startColumnIdx; // Calculate the global column group index
             // Create a new ColumnsCanvas instance
-            const canvas = new ColumnsCanvas(colIdx, this.columnWidths, this.defaultWidth, this.defaultHeight, this._ifResizeOn, this._ifResizePointerDown, this.currentResizingColumn, this.selectionCoordinates);
+            const canvas = new ColumnsCanvas(colIdx, this.columnWidths, this.defaultWidth, this.defaultHeight, this.selectionCoordinates);
             this.visibleColumns.push(canvas); // Add to the array of visible canvases
             this.visibleColumnsPrefixSum.push(canvas.columnsPositionArr); // Store its prefix sum array
             this.columnsDivContainer.appendChild(canvas.columnCanvasDiv); // Append to the DOM container
@@ -97,7 +89,7 @@ export class ColumnsManager {
     mountColumnRight() {
         const colIdx = this.startColumnIdx + this.visibleColumnCnt - 1; // Calculate the index for the new column group
         // Create a new ColumnsCanvas instance for the new column group
-        const canvas = new ColumnsCanvas(colIdx, this.columnWidths, this.defaultWidth, this.defaultHeight, this._ifResizeOn, this._ifResizePointerDown, this.currentResizingColumn, this.selectionCoordinates);
+        const canvas = new ColumnsCanvas(colIdx, this.columnWidths, this.defaultWidth, this.defaultHeight, this.selectionCoordinates);
         this.visibleColumns.push(canvas); // Add to the end of the visible canvases array
         this.columnsDivContainer.appendChild(canvas.columnCanvasDiv); // Append to the DOM container
         this.visibleColumnsPrefixSum.push(canvas.columnsPositionArr); // Add its prefix sum array
@@ -109,7 +101,7 @@ export class ColumnsManager {
     mountColumnLeft() {
         const columnIdx = this.startColumnIdx; // The index for the new column group
         // Create a new ColumnsCanvas instance for the new column group
-        const canvas = new ColumnsCanvas(columnIdx, this.columnWidths, this.defaultWidth, this.defaultHeight, this._ifResizeOn, this._ifResizePointerDown, this.currentResizingColumn, this.selectionCoordinates);
+        const canvas = new ColumnsCanvas(columnIdx, this.columnWidths, this.defaultWidth, this.defaultHeight, this.selectionCoordinates);
         this.visibleColumns.unshift(canvas); // Add to the beginning of the visible canvases array
         this.columnsDivContainer.prepend(canvas.columnCanvasDiv); // Prepend to the DOM container
         this.visibleColumnsPrefixSum.unshift(canvas.columnsPositionArr); // Add its prefix sum array to the beginning

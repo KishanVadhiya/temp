@@ -1,9 +1,7 @@
 // Imports remain unchanged
 import { ColumnData } from "./types/ColumnRows";
-import { BooleanObj } from "./types/BooleanObj.js";
-import { NumberObj } from "./types/NumberObj";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates";
-
+import { NumberObj } from "./types/NumberObj";
 /**
  * Manages the rendering and interaction of column headers on a canvas.
  * Handles column resizing and visual feedback for selections.
@@ -27,22 +25,12 @@ export class ColumnsCanvas {
     /** @private @type {HTMLDivElement} The draggable div used as a visual handle for column resizing. */
     private resizeDiv: HTMLDivElement = document.createElement("div");
     /** @private @type {BooleanObj} A mutable boolean object indicating if a column resize action is currently active (hovering over a resizable edge). */
-    private ifResizeOn: BooleanObj;
-    /** @private @type {NumberObj} A mutable number object storing the ID of the column currently being resized. */
-    private currentResizingColumn: NumberObj;
-    /** @private @type {BooleanObj} A mutable boolean object indicating if the resize pointer is currently held down. */
-    private ifResizePointerDown: BooleanObj;
-    /** @private @type {number} The index of the column boundary currently being hovered over for resizing, or -1 if none. */
-    private hoverIdx: number = -1;
     /** @private @type {MultipleSelectionCoordinates} An object containing the start and end coordinates of the current cell selection. */
     private selectionCoordinates: MultipleSelectionCoordinates;
 
-    /** @private @type {number} Stores the width of the column *before* a resize operation for undo functionality. */
-    private prevValue:number=100;
     /** @private @type {number} Stores the width of the column *after* a resize operation for undo functionality. */
     private newValue:number=100;
-    /** @private @type {number} Stores the key (index) of the column being resized for undo functionality. */
-    private columnKey:number=-1;
+
 
     /**
      * Creates an instance of ColumnsCanvas.
@@ -60,9 +48,6 @@ export class ColumnsCanvas {
         columnWidths: ColumnData,
         defaultWidth: number,
         defaultHeight: number,
-        ifResizeOn: BooleanObj,
-        ifResizePointerDown: BooleanObj,
-        currentResizingColumn: NumberObj,
         selectionCoordinates: MultipleSelectionCoordinates
     ) {
         this.columnWidths = columnWidths;
@@ -70,22 +55,18 @@ export class ColumnsCanvas {
         this.defaultHeight = defaultHeight;
         this.defaultWidth = defaultWidth;
         this.columnsPositionArr = []; // Will be populated by setColumnsPositionArr
-        this.currentResizingColumn = currentResizingColumn;
-        this.ifResizeOn = ifResizeOn;
-        this.ifResizePointerDown = ifResizePointerDown;
         this.selectionCoordinates = selectionCoordinates;
         this.setColumnsPositionArr(); // Initialize column positions
         this.columnCanvasDiv = this.createcolumnCanvas(); // Create the DOM elements
-        // this.handleResize(); // Attach event listeners for resizing
     }
 
     /**
      * Gets the previous width value of the column being resized.
      * @returns {number} The previous width.
      */
-    getPrevValue(): number {
-        return this.prevValue;
-    }
+    // getPrevValue(): number {
+    //     return this.prevValue;
+    // }
 
     /**
      * Gets the new width value of the column after resizing.
@@ -99,9 +80,7 @@ export class ColumnsCanvas {
      * Gets the key (index) of the column being resized.
      * @returns {number} The column key.
      */
-    getColumnKey(): number {
-        return this.columnKey;
-    }
+  
 
     /**
      * Sets up event listeners for column resizing interactions (pointerdown, pointermove, pointerout).

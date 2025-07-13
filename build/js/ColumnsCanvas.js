@@ -14,39 +14,29 @@ export class ColumnsCanvas {
      * @param {NumberObj} currentResizingColumn - Number object storing the currently resizing column's ID.
      * @param {MultipleSelectionCoordinates} selectionCoordinates - Object with current selection coordinates.
      */
-    constructor(columnID, columnWidths, defaultWidth, defaultHeight, ifResizeOn, ifResizePointerDown, currentResizingColumn, selectionCoordinates) {
+    constructor(columnID, columnWidths, defaultWidth, defaultHeight, selectionCoordinates) {
         /** @private @type {HTMLCanvasElement} The HTML canvas element used for drawing column headers. */
         this.columnCanvas = document.createElement("canvas");
         /** @private @type {HTMLDivElement} The draggable div used as a visual handle for column resizing. */
         this.resizeDiv = document.createElement("div");
-        /** @private @type {number} The index of the column boundary currently being hovered over for resizing, or -1 if none. */
-        this.hoverIdx = -1;
-        /** @private @type {number} Stores the width of the column *before* a resize operation for undo functionality. */
-        this.prevValue = 100;
         /** @private @type {number} Stores the width of the column *after* a resize operation for undo functionality. */
         this.newValue = 100;
-        /** @private @type {number} Stores the key (index) of the column being resized for undo functionality. */
-        this.columnKey = -1;
         this.columnWidths = columnWidths;
         this.columnID = columnID;
         this.defaultHeight = defaultHeight;
         this.defaultWidth = defaultWidth;
         this.columnsPositionArr = []; // Will be populated by setColumnsPositionArr
-        this.currentResizingColumn = currentResizingColumn;
-        this.ifResizeOn = ifResizeOn;
-        this.ifResizePointerDown = ifResizePointerDown;
         this.selectionCoordinates = selectionCoordinates;
         this.setColumnsPositionArr(); // Initialize column positions
         this.columnCanvasDiv = this.createcolumnCanvas(); // Create the DOM elements
-        // this.handleResize(); // Attach event listeners for resizing
     }
     /**
      * Gets the previous width value of the column being resized.
      * @returns {number} The previous width.
      */
-    getPrevValue() {
-        return this.prevValue;
-    }
+    // getPrevValue(): number {
+    //     return this.prevValue;
+    // }
     /**
      * Gets the new width value of the column after resizing.
      * @returns {number} The new width.
@@ -58,9 +48,6 @@ export class ColumnsCanvas {
      * Gets the key (index) of the column being resized.
      * @returns {number} The column key.
      */
-    getColumnKey() {
-        return this.columnKey;
-    }
     /**
      * Sets up event listeners for column resizing interactions (pointerdown, pointermove, pointerout).
      * This method manages the visual feedback of the resize handle and updates resize state flags.

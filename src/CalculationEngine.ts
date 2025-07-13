@@ -1,4 +1,3 @@
-import { BooleanObj } from "./types/BooleanObj";
 import { CellsMap } from "./types/CellsMap";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates";
 
@@ -14,16 +13,10 @@ export class CalculationEngine {
 
     /**
      * @param {CellsMap} cellsMap - A map containing all cell data.
-     * @param {BooleanObj} ifTilesSelectionOn - Boolean object indicating if tile selection is active.
-     * @param {BooleanObj} ifRowsSelectionOn - Boolean object indicating if row selection is active.
-     * @param {BooleanObj} ifColumnsSelectionOn - Boolean object indicating if column selection is active.
      * @param {MultipleSelectionCoordinates} selectionCoordinates - Object holding the coordinates of the current selection.
      */
     constructor(
         private cellsMap: CellsMap,
-        private ifTilesSelectionOn: BooleanObj,
-        private ifRowsSelectionOn: BooleanObj,
-        private ifColumnsSelectionOn: BooleanObj,
         private selectionCoordinates: MultipleSelectionCoordinates
     ) {
         this.initializeCalculationResults();
@@ -66,19 +59,16 @@ export class CalculationEngine {
     }
 
     /**
-     * Handles the pointer up event to trigger calculations based on the active selection type.
+     * Handles the pointer up event to trigger calculations based on the selected range.
      * @param {PointerEvent} _ - The pointer event object (unused but required by event listener signature).
      */
-    handlePointerUpEvent(_: PointerEvent) {
-        if (this.ifTilesSelectionOn.value) this.handleTileSelection();
-        if (this.ifRowsSelectionOn.value) this.handleRowsSelection();
-        if (this.ifColumnsSelectionOn.value) this.handleColumnsSelection();
-    }
+    
 
     /**
-     * Performs calculations for a selected range of cells (tiles).
+     * Performs calculations for the selected range using optimized traversal logic.
+     * Chooses between iterating over the range or the map based on efficiency.
      */
-    private handleTileSelection() {
+    handleSelection() {
         this.resetCalculationResults();
 
         const { selectionStartRow, selectionEndRow, selectionStartColumn, selectionEndColumn } = this.selectionCoordinates;
@@ -88,6 +78,29 @@ export class CalculationEngine {
         const startCol = Math.min(selectionStartColumn, selectionEndColumn);
         const endCol = Math.max(selectionStartColumn, selectionEndColumn);
 
+        const rangeRowCount = endRow - startRow + 1;
+        const mapRowCount = this.cellsMap.size;
+
+        // If the map has more rows than the range, iterate over the range
+        if (mapRowCount > rangeRowCount) {
+            this.iterateOverRange(startRow, endRow, startCol, endCol);
+        } else {
+            // Otherwise, iterate over the map and check if cells are in range
+            this.iterateOverMap(startRow, endRow, startCol, endCol);
+        }
+
+        this.finalizeAverage();
+        this.displayCalculationsFromMap();
+    }
+
+    /**
+     * Iterates over the specified range to process cells.
+     * @param {number} startRow - Starting row index.
+     * @param {number} endRow - Ending row index.
+     * @param {number} startCol - Starting column index.
+     * @param {number} endCol - Ending column index.
+     */
+    private iterateOverRange(startRow: number, endRow: number, startCol: number, endCol: number) {
         for (let i = startRow; i <= endRow; i++) {
             const row = this.cellsMap.get(i);
             if (!row) continue;
@@ -98,52 +111,26 @@ export class CalculationEngine {
                 this.processCell(cell);
             }
         }
-
-        this.finalizeAverage();
-        this.displayCalculationsFromMap();
     }
 
     /**
-     * Performs calculations for a selected range of rows.
+     * Iterates over the map and processes cells that fall within the specified range.
+     * @param {number} startRow - Starting row index.
+     * @param {number} endRow - Ending row index.
+     * @param {number} startCol - Starting column index.
+     * @param {number} endCol - Ending column index.
      */
-    private handleRowsSelection() {
-        this.resetCalculationResults();
+    private iterateOverMap(startRow: number, endRow: number, startCol: number, endCol: number) {
+        for (const [rowIndex, row] of this.cellsMap.entries()) {
+            // Skip rows outside the selection range
+            if (rowIndex < startRow || rowIndex > endRow) continue;
 
-        const start = Math.min(this.selectionCoordinates.selectionStartRow, this.selectionCoordinates.selectionEndRow);
-        const end = Math.max(this.selectionCoordinates.selectionStartRow, this.selectionCoordinates.selectionEndRow);
-
-        for (let i = start; i <= end; i++) {
-            const row = this.cellsMap.get(i);
-            if (!row) continue;
-
-            for (const cell of row.values()) {
+            for (const [colIndex, cell] of row.entries()) {
+                // Skip columns outside the selection range
+                if (colIndex < startCol || colIndex > endCol) continue;
                 this.processCell(cell);
             }
         }
-
-        this.finalizeAverage();
-        this.displayCalculationsFromMap();
-    }
-
-    /**
-     * Performs calculations for a selected range of columns.
-     */
-    private handleColumnsSelection() {
-        this.resetCalculationResults();
-
-        const start = Math.min(this.selectionCoordinates.selectionStartColumn, this.selectionCoordinates.selectionEndColumn);
-        const end = Math.max(this.selectionCoordinates.selectionStartColumn, this.selectionCoordinates.selectionEndColumn);
-
-        for (const row of this.cellsMap.values()) {
-            for (let j = start; j <= end; j++) {
-                const cell = row.get(j);
-                if (!cell) continue;
-                this.processCell(cell);
-            }
-        }
-
-        this.finalizeAverage();
-        this.displayCalculationsFromMap();
     }
 
     /**

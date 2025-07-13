@@ -1,5 +1,3 @@
-import { BooleanObj } from "./types/BooleanObj.js";
-import { NumberObj } from "./types/NumberObj.js";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates";
 import { RowData } from "./types/RowsColumn";
 
@@ -33,26 +31,17 @@ export class RowsCanvas {
     private resizeDiv: HTMLDivElement = document.createElement("div");
 
     /** @type {BooleanObj} Global flag to show or hide resize line on hover */
-    private ifResizeOn: BooleanObj;
-
-    /** @type {NumberObj} Global shared variable storing the currently resizing row ID */
-    private currentResizingRow: NumberObj;
-
-    /** @type {BooleanObj} Global flag indicating if the pointer is pressed during resize */
-    private ifResizePointerDown: BooleanObj;
-
-    /** @type {number} Index of the row currently being hovered near a resize boundary */
-    private hoverIdx: number = -1;
+    // private ifResizeOn: BooleanObj;
 
     /** @type {MultipleSelectionCoordinates} Shared selection coordinates for highlighting rows. */
     private selectionCoordinates: MultipleSelectionCoordinates;
 
     /** @type {number} Stores the height of the row *before* a resize operation for undo functionality. */
-    private prevValue: number = 25;
+    // private prevValue: number = 25;
     /** @type {number} Stores the height of the row *after* a resize operation for undo functionality. */
     private newValue: number = 25;
     /** @type {number} Stores the key (index) of the row being resized for undo functionality. */
-    private rowKey: number = -1;
+    // private rowKey: number = -1;
 
     /**
      * Initializes the RowsCanvas with layout and resize behavior.
@@ -70,9 +59,6 @@ export class RowsCanvas {
         rowHeights: RowData,
         defaultWidth: number,
         defaultHeight: number,
-        ifResizeOn: BooleanObj,
-        ifResizePointerDown: BooleanObj,
-        currentResizingRow: NumberObj,
         selectionCoordinates: MultipleSelectionCoordinates
     ) {
         this.rowHeights = rowHeights;
@@ -80,9 +66,6 @@ export class RowsCanvas {
         this.defaultHeight = defaultHeight;
         this.defaultWidth = defaultWidth;
         this.rowsPositionArr = []; // Initialized as an empty array
-        this.currentResizingRow = currentResizingRow;
-        this.ifResizeOn = ifResizeOn;
-        this.ifResizePointerDown = ifResizePointerDown;
         this.selectionCoordinates = selectionCoordinates;
         this.setRowsPositionArr(); // Calculate initial row positions
         this.rowCanvasDiv = this.createRowCanvas(); // Create the DOM elements for the row canvas
@@ -93,9 +76,9 @@ export class RowsCanvas {
      * Gets the previous height value of the row being resized.
      * @returns {number} The previous height.
      */
-    getPrevValue(): number {
-        return this.prevValue;
-    }
+    // getPrevValue(): number {
+    //     return this.prevValue;
+    // }
 
     /**
      * Gets the new height value of the row after resizing.
@@ -109,62 +92,7 @@ export class RowsCanvas {
      * Gets the key (index) of the row being resized.
      * @returns {number} The row key.
      */
-    getRowKey(): number {
-        return this.rowKey;
-    }
-
-    /**
-     * Adds resize behavior and hover logic to row borders.
-     * This method sets up event listeners for pointer interactions (down, move, out)
-     * to manage the visual resize indicator and update state variables for resizing.
-     */
-    // private handleResize(): void {
-    //     // this.rowCanvasDiv.addEventListener("pointerdown", (event) => {
-    //     //     if (event.button === 1) { // Ignore middle-click
-    //     //         return;
-    //     //     }
-    //     //     this.hoverIdx = this.binarySearchRange(event.offsetY); // Determine which row boundary is hovered
-    //     //     if (this.hoverIdx !== -1) {
-    //     //         this.ifResizePointerDown.value = true; // Set flag when pointer is down on a resizable edge
-    //     //         const rowKey = this.rowID * 25 + 1 + this.hoverIdx; // Calculate global row key
-    //     //         // Store previous and current height for undo/redo
-    //     //         this.prevValue = this.rowHeights.get(rowKey)?.height || 25;
-    //     //         this.newValue = this.prevValue;
-    //     //         this.rowKey = rowKey; // Store the row key
-    //     //     }
-    //     // });
-
-    //     // this.rowCanvasDiv.addEventListener("pointermove", (event) => {
-    //     //     if (this.ifResizePointerDown.value) {
-    //     //         // If resize is active and pointer is down, indicate which row canvas is involved
-    //     //         this.currentResizingRow.value = this.rowID;
-    //     //         return;
-    //     //     }
-
-    //     //     this.hoverIdx = this.binarySearchRange(event.offsetY); // Find hovered row boundary
-    //     //     if (this.hoverIdx !== -1) {
-    //     //         this.ifResizeOn.value = true; // Indicate that resizing is possible
-    //     //         this.resizeDiv.style.display = "block"; // Show the resize handle
-    //     //         // Position the resize handle at the row boundary
-    //     //         this.resizeDiv.style.top = `${this.rowsPositionArr[this.hoverIdx] - 1.5}px`;
-    //     //         this.resizeDiv.style.zIndex = `10`; // Bring resize handle to front
-    //     //     } else {
-    //     //         if (!this.ifResizePointerDown.value) {
-    //     //             // Hide resize handle if not hovering and not currently resizing
-    //     //             if (this.resizeDiv) this.resizeDiv.style.display = "none";
-    //     //         }
-    //     //         this.ifResizeOn.value = false; // Indicate that resizing is not possible
-    //     //     }
-    //     // });
-
-    //     this.rowCanvasDiv.addEventListener("pointerout", (event) => {
-    //         if (!this.ifResizePointerDown.value) {
-    //             // Hide resize handle when pointer leaves if not actively resizing
-    //             if (this.resizeDiv) this.resizeDiv.style.display = "none";
-    //         }
-    //         this.ifResizeOn.value = false; // Reset resize active flag
-    //     });
-    // }
+    
 
     /**
      * Resizes a specific row when dragged, clamps height, and redraws.
@@ -291,34 +219,45 @@ export class RowsCanvas {
     drawCanvas(): void {
         if (!this.rowCanvas) return; // Ensure canvas element exists
 
+        // Get device pixel ratio for sharp rendering
+        const dpr = window.devicePixelRatio || 1;
+        
+        // Calculate actual canvas dimensions
+        const canvasWidth = this.defaultWidth;
+        const canvasHeight = this.rowsPositionArr[24];
+
+        // Set canvas internal dimensions (for drawing) based on DPR
+        this.rowCanvas.width = canvasWidth * dpr;
+        this.rowCanvas.height = canvasHeight * dpr;
+        
+        // Set canvas display dimensions (CSS)
+        this.rowCanvas.style.width = `${canvasWidth}px`;
+        this.rowCanvas.style.height = `${canvasHeight}px`;
+
+        const ctx = this.rowCanvas.getContext("2d") as CanvasRenderingContext2D;
+        
+        // Scale the context to match the device pixel ratio
+        ctx.scale(dpr, dpr);
+        
+        // Clear the canvas
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
         // Determine the effective selection range for rows and columns on this canvas
         const canvasStartRow = Math.min(this.selectionCoordinates.selectionEndRow, this.selectionCoordinates.selectionStartRow);
         const canvasEndRow = Math.max(this.selectionCoordinates.selectionEndRow, this.selectionCoordinates.selectionStartRow);
-        const canvasStartColumn = Math.min(this.selectionCoordinates.selectionEndColumn, this.selectionCoordinates.selectionStartColumn);
-        const canvasEndColumn = Math.max(this.selectionCoordinates.selectionEndColumn, this.selectionCoordinates.selectionStartColumn);
-
-        // Set canvas dimensions based on device pixel ratio for sharp rendering
-        const dpr = window.devicePixelRatio || 1;
-        this.rowCanvas.width = this.defaultWidth * dpr;
-        this.rowCanvas.height = this.rowsPositionArr[24] * dpr; // Total height of 25 rows
-        this.rowCanvas.style.width = `${this.defaultWidth}px`;
-        this.rowCanvas.style.height = `${this.rowsPositionArr[24]}px`;
-
+        
         let widthOffset = 0; // Used for adjusting line width when selected
-
-        const ctx = this.rowCanvas.getContext("2d") as CanvasRenderingContext2D;
-        ctx.clearRect(0, 0, this.defaultWidth, this.rowsPositionArr[24]); // Clear previous drawings
-        ctx.scale(dpr, dpr); // Apply DPR scaling
 
         // Fill background
         ctx.fillStyle = "#f5f5f5"; // Light grey background
-        ctx.fillRect(0, 0, this.defaultWidth, this.rowsPositionArr[24]);
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
         // === Draw Right Border First ===
         ctx.beginPath();
         ctx.strokeStyle = "#ddd"; // Light grey border
-        ctx.moveTo(this.defaultWidth - 0.5, 0);
-        ctx.lineTo(this.defaultWidth - 0.5, this.rowsPositionArr[24]);
+        ctx.lineWidth = 1;
+        ctx.moveTo(canvasWidth - 0.5, 0);
+        ctx.lineTo(canvasWidth - 0.5, canvasHeight);
         ctx.stroke();
 
         // === Text and grid line setup ===
@@ -328,7 +267,7 @@ export class RowsCanvas {
         ctx.textBaseline = "middle";
 
         let startNum = this.rowID * 25 + 1; // The starting global row number for this canvas (e.g., 1, 26, 51...)
-        const offset = 0.5 / dpr; // Pixel perfect alignment for lines
+        const offset = 0.5; // Pixel perfect alignment for lines
 
         for (let i = 0; i < 25; i++) { // Loop through 25 rows on this canvas
             const yTop = (i === 0) ? 0 : this.rowsPositionArr[i - 1]; // Top edge of the current row
@@ -343,20 +282,20 @@ export class RowsCanvas {
                 if (this.ifSelectedWhole()) {
                     // If entire rows are selected (from column 1 to last column)
                     ctx.fillStyle = "#107C41"; // Dark green fill
-                    ctx.fillRect(0, yTop, this.defaultWidth, yBottom - yTop);
+                    ctx.fillRect(0, yTop, canvasWidth, yBottom - yTop);
                     ctx.fillStyle = "#ffffff"; // White text
                     ctx.strokeStyle = "#ffffff"; // White stroke for inner lines
                 } else {
                     // If only part of the rows are selected
                     ctx.fillStyle = "#CAEAD8"; // Light green fill
-                    ctx.fillRect(0, yTop, this.defaultWidth, yBottom - yTop);
+                    ctx.fillRect(0, yTop, canvasWidth, yBottom - yTop);
 
                     // Draw a thicker right border for partial selection
                     ctx.beginPath();
                     ctx.lineWidth = 2;
                     ctx.strokeStyle = "#107C41"; // Dark green border
-                    ctx.moveTo(this.defaultWidth - 1, yTop);
-                    ctx.lineTo(this.defaultWidth - 1, yBottom);
+                    ctx.moveTo(canvasWidth - 1, yTop);
+                    ctx.lineTo(canvasWidth - 1, yBottom);
                     ctx.stroke();
 
                     ctx.beginPath(); // Reset path for text and inner lines
@@ -374,11 +313,11 @@ export class RowsCanvas {
             // Draw horizontal grid line for each row
             ctx.beginPath();
             ctx.moveTo(0, this.rowsPositionArr[i] - offset);
-            ctx.lineTo(this.defaultWidth - widthOffset, this.rowsPositionArr[i] - offset);
+            ctx.lineTo(canvasWidth - widthOffset, this.rowsPositionArr[i] - offset);
             ctx.stroke();
 
             // Draw row number
-            ctx.fillText(`${rowIndex}`, this.defaultWidth - 5, yPos);
+            ctx.fillText(`${rowIndex}`, canvasWidth - 5, yPos);
         }
 
         // Draw the bottommost selection border if applicable
@@ -391,7 +330,7 @@ export class RowsCanvas {
                 ctx.strokeStyle = "#107C41"; // Dark green
                 ctx.lineWidth = 2;
                 ctx.moveTo(0, this.rowsPositionArr[lastIdx] - 1);
-                ctx.lineTo(this.defaultWidth, this.rowsPositionArr[lastIdx] - 1);
+                ctx.lineTo(canvasWidth, this.rowsPositionArr[lastIdx] - 1);
             }
         } else {
             // For partial row selection, apply lighter green border
@@ -401,7 +340,7 @@ export class RowsCanvas {
                 ctx.strokeStyle = "#A0D8B9"; // Lighter green
                 ctx.lineWidth = 1;
                 ctx.moveTo(0, (firstIdx === 0) ? 0 : this.rowsPositionArr[firstIdx - 1]);
-                ctx.lineTo(this.defaultWidth, (firstIdx === 0) ? 0 : this.rowsPositionArr[firstIdx - 1]);
+                ctx.lineTo(canvasWidth, (firstIdx === 0) ? 0 : this.rowsPositionArr[firstIdx - 1]);
             }
         }
         ctx.stroke(); // Final stroke for the bottommost selection border

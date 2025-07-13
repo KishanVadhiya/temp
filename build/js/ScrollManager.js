@@ -113,6 +113,7 @@ export class ScrollManager {
             bufferRect.bottom > this.containerDivRect.top);
         if (isVisible) {
             // If the buffer is visible, attempt to scroll down managers
+            console.log("buffer is visible ...............");
             if ((_b = this.rowsManager) === null || _b === void 0 ? void 0 : _b.scrollDown()) {
                 (_c = this.tilesManager) === null || _c === void 0 ? void 0 : _c.scrollDown();
             }

@@ -1,6 +1,7 @@
 import { CellsManager } from "./CellsManager.js";
 import { Tile } from "./Tile.js";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates.js";
+import { NumberObj } from "./types/NumberObj.js";
 
 /**
  * Manages the rendering and dynamic loading/unloading of visible cell tiles within the grid.
@@ -34,9 +35,9 @@ export class TilesManager {
     private startColIdx: number;
 
     /** @type {{ value: number }} An object holding the current vertical margin (scroll offset) of the grid. */
-    private marginTop: { value: number };
+    private marginTop:  NumberObj ;
     /** @type {{ value: number }} An object holding the current horizontal margin (scroll offset) of the grid. */
-    private marginLeft: { value: number };
+    private marginLeft:NumberObj ;
 
     /** @type {HTMLDivElement} The main grid container div element in the DOM. */
     readonly gridDiv: HTMLDivElement;
@@ -66,8 +67,8 @@ export class TilesManager {
         CellsManager: CellsManager,
         startRowIdx: number = 0,
         startColIdx: number = 0,
-        marginTop: { value: number } = { value: 0 },
-        marginLeft: { value: number } = { value: 0 }
+        marginTop:NumberObj ,
+        marginLeft:NumberObj 
     ) {
         // Get the main grid container DOM element
         this.gridDiv = document.getElementById("grid") as HTMLDivElement;
@@ -92,7 +93,7 @@ export class TilesManager {
      * incrementing the starting row index, and mounting a new row at the bottom.
      */
     scrollDown(): void {
-        this.gridDiv.style.marginTop = `${this.marginTop.value}px`; // Apply new top margin
+        this.gridDiv.style.marginTop = `${this.marginTop}px`; // Apply new top margin
         this.unmountTileTop(); // Remove the topmost row of tiles
         this.startRowIdx++; // Increment the global starting row index
         this.mountTileBottom(); // Add a new row of tiles to the bottom
@@ -116,7 +117,7 @@ export class TilesManager {
      * decrementing the starting row index, and mounting a new row at the top.
      */
     scrollUp(): void {
-        this.gridDiv.style.marginTop = `${this.marginTop.value}px`; // Apply new top margin
+        this.gridDiv.style.marginTop = `${this.marginTop}px`; // Apply new top margin
         this.unmountTileBottom(); // Remove the bottommost row of tiles
         this.startRowIdx--; // Decrement the global starting row index
         this.mountTileTop(); // Add a new row of tiles to the top
@@ -250,6 +251,8 @@ export class TilesManager {
             // Append the new tile's DOM element to the newly created row container div
             this.visibleTilesRowDivArr[this.visibleTilesRowDivArr.length - 1].appendChild(tile.tileDiv);
         }
+
+        // console.log("mounted tile to bottom");
 
         this.visibleTiles.push(currentVisibleRow); // Add the new row of tiles to the `visibleTiles` 2D array
         this.gridDiv.appendChild(this.visibleTilesRowDivArr[this.visibleTilesRowDivArr.length - 1]); // Append the row div to the main grid container

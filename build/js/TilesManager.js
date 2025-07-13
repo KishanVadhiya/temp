@@ -18,7 +18,7 @@ export class TilesManager {
      * @param {{ value: number }} [marginTop={ value: 0 }] - The initial top margin (vertical scroll offset).
      * @param {{ value: number }} [marginLeft={ value: 0 }] - The initial left margin (horizontal scroll offset).
      */
-    constructor(visibleTilesRowPrefixSum, visibleTilesColumnPrefixSum, visibleRowCnt, visibleColumnCnt, selectionCoordinates, CellsManager, startRowIdx = 0, startColIdx = 0, marginTop = { value: 0 }, marginLeft = { value: 0 }) {
+    constructor(visibleTilesRowPrefixSum, visibleTilesColumnPrefixSum, visibleRowCnt, visibleColumnCnt, selectionCoordinates, CellsManager, startRowIdx = 0, startColIdx = 0, marginTop, marginLeft) {
         // Get the main grid container DOM element
         this.gridDiv = document.getElementById("grid");
         this.visibleTilesRowPrefixSum = visibleTilesRowPrefixSum;
@@ -41,7 +41,7 @@ export class TilesManager {
      * incrementing the starting row index, and mounting a new row at the bottom.
      */
     scrollDown() {
-        this.gridDiv.style.marginTop = `${this.marginTop.value}px`; // Apply new top margin
+        this.gridDiv.style.marginTop = `${this.marginTop}px`; // Apply new top margin
         this.unmountTileTop(); // Remove the topmost row of tiles
         this.startRowIdx++; // Increment the global starting row index
         this.mountTileBottom(); // Add a new row of tiles to the bottom
@@ -63,7 +63,7 @@ export class TilesManager {
      * decrementing the starting row index, and mounting a new row at the top.
      */
     scrollUp() {
-        this.gridDiv.style.marginTop = `${this.marginTop.value}px`; // Apply new top margin
+        this.gridDiv.style.marginTop = `${this.marginTop}px`; // Apply new top margin
         this.unmountTileBottom(); // Remove the bottommost row of tiles
         this.startRowIdx--; // Decrement the global starting row index
         this.mountTileTop(); // Add a new row of tiles to the top
@@ -181,6 +181,7 @@ export class TilesManager {
             // Append the new tile's DOM element to the newly created row container div
             this.visibleTilesRowDivArr[this.visibleTilesRowDivArr.length - 1].appendChild(tile.tileDiv);
         }
+        // console.log("mounted tile to bottom");
         this.visibleTiles.push(currentVisibleRow); // Add the new row of tiles to the `visibleTiles` 2D array
         this.gridDiv.appendChild(this.visibleTilesRowDivArr[this.visibleTilesRowDivArr.length - 1]); // Append the row div to the main grid container
     }
