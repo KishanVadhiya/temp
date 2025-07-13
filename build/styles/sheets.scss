@@ -1,0 +1,79 @@
+.sheet {
+  position: relative;
+  scrollbar-color: #e7e7e7;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto 1fr;
+  height: calc(100vh - 216px - 55px);
+  width: calc(100vw);
+  overflow-y: scroll;
+  overflow-x: scroll;
+ 
+  .corner {
+    grid-row: 1 / 2;
+    grid-column: 1 / 2;
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 3;
+    background-color: #f5f5f5;
+    // border: 1px solid black;
+    width: 50px;
+    height: 25px;
+    box-sizing: border-box;
+    border-right: 2px solid #BDBDBD;
+    border-bottom: 2px solid #BDBDBD;
+  }
+ 
+  .columnsRowWrapper {
+    grid-row: 1 / 2;
+    grid-column: 2 / 3;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    background-color: #f1f1f1;
+  }
+ 
+  .rowsColumnWrapper {
+    grid-row: 2 / 3;
+    grid-column: 1 / 2;
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background-color: #f1f1f1;
+    box-sizing: content-box;
+  }
+ 
+  .gridContent {
+    grid-row: 2 / 3;
+    grid-column: 2 / 3;
+    overflow: scroll;
+    position: relative;
+  }
+}
+
+.subRow{
+  position: relative;
+  .RowResizeDiv{
+    position: absolute;
+    width: 30px;
+    left:10px;
+    height: 2px;
+    background-color: black;
+  }
+}
+
+.tileDiv{
+  position: relative;
+  .cellInput{
+    position: absolute;
+    top:0;
+    left:0;
+    box-sizing: border-box;
+    &:focus{
+      outline: none;
+      border: 2px solid #137E43;
+    }
+  }
+}
