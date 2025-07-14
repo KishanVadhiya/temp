@@ -1,120 +1,78 @@
-// Importing required managers and types
+// Importing core managers
 import { ScrollManager } from "./ScrollManager.js";
 import { RowsManager } from "./RowsManager.js";
 import { ColumnsManager } from "./ColumnsManager.js";
 import { TilesManager } from "./TilesManager.js";
-
-import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates.js";
-import { CellsManager } from "./CellsManager.js";
 import { UndoRedoManager } from "./UndoRedoManager/UndoRedoManager.js";
 import { JSONUpload } from "./JSONUpload.js";
+import { CalculationEngine } from "./CalculationEngine.js";
+import { InteractionManager } from "./DOMEventHandler/InteractionManager.js";
+
+// Importing types
+import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates.js";
 import { CellsMap } from "./types/CellsMap.js";
 import { ColumnData } from "./types/ColumnRows.js";
 import { RowData } from "./types/RowsColumn.js";
-import { CalculationEngine } from "./CalculationEngine.js";
-import { InteractionManager } from "./DOMEventHandler/InteractionManager.js";
+import { CellsManager } from "./CellsManager.js";
 
 /**
  * Main application class for initializing and managing the spreadsheet-like interface
  */
 class App {
+    // === Core Data Structures ===
+    private cellData: CellsMap = new Map();       // Stores all cell data
+    private columnData: ColumnData = new Map();   // Stores column width and data
+    private rowData: RowData = new Map();         // Stores row height and data
 
-    /**@type {MultipleSelectionCoordinates} Stores the selection start and end coordinates */
-    private selectionCoordinates: MultipleSelectionCoordinates;
+    // === Selection State ===
+    private selectionCoordinates: MultipleSelectionCoordinates = {
+        selectionStartRow: 1,
+        selectionEndRow: 1,
+        selectionStartColumn: 1,
+        selectionEndColumn: 1
+    };
 
-    /** @type {HTMLInputElement} Reference to the outer input bar HTML element. */
-    // private outerInput:HTMLInputElement;
-
-    /** @type {CellsMap} A map holding all the cell data. */
-    private cellData:CellsMap;
-
-    /** @type {ColumnData} A map holding column-specific data. */
-    private columnData:ColumnData;
-
-    /** @type {RowData} A map holding row-specific data. */
-    private rowData:RowData;
-
-    /** @type {CellsManager} Instance of the CellsManager to handle cell data. */
-    private CellsManagerObj:CellsManager;
-
-    /** @type {UndoRedoManager} Instance of the UndoRedoManager for managing undo/redo operations. */
-    private undoRedoManager:UndoRedoManager;
-
-    /** @type {ScrollManager} Instance of the ScrollManager to handle scrolling. */
-    private ScrollManagerObj:ScrollManager;
-
-    /** @type {RowsManager} Instance of the RowsManager to handle row-related operations. */
-    private RowsManagerObj:RowsManager;
-
-    /** @type {ColumnsManager} Instance of the ColumnsManager to handle column-related operations. */
-    private ColumnsManagerObj:ColumnsManager;
-
-    /** @type {TilesManager} Instance of the TilesManager to handle cell rendering and interaction. */
-    private TilesManagerObj:TilesManager;
-
-    /** @type {JSONUpload} Instance of the JSONUpload to handle JSON file operations. */
-    private JSONUploadObj:JSONUpload;
-
-    /** @type {ResizeManager} Instance of the ResizeManager to handle row and column resizing. */
-    // private ResizeManagerObj:ResizeManager;
-
-    /** @type {CellSelectionManager} Instance of the CellSelectionManager to handle cell selections. */
-    // private CellSelectionManagerObj:SelectionManager;
-
-    /** @type {CalculationEngine} Instance of the CalculationEngine to perform calculations on selected cells. */
-    private calculationEngineObj:CalculationEngine;
-
-
-    private InteractionManagerObj:InteractionManager;
-
-
+    // === Managers ===
+    private CellsManagerObj: CellsManager;
+    private undoRedoManager: UndoRedoManager;
+    private ScrollManagerObj: ScrollManager;
+    private RowsManagerObj: RowsManager;
+    private ColumnsManagerObj: ColumnsManager;
+    private TilesManagerObj: TilesManager;
+    private JSONUploadObj: JSONUpload;
+    private calculationEngineObj: CalculationEngine;
+    private InteractionManagerObj: InteractionManager;
 
     /**
-     * Initializes the App
+     * Constructs the application and initializes all subsystems
      */
     constructor() {
-        this.cellData=new Map();
-        this.columnData=new Map();
-        this.rowData= new Map();
-        // Get reference to the outer input bar element
-        // this.outerInput=document.querySelector(".outerInputBar") as HTMLInputElement;
-        
-        // Initialize selection coordinates with default values
-        this.selectionCoordinates = {
-            selectionStartRow: 1,
-            selectionEndRow: 1,
-            selectionStartColumn: 1,
-            selectionEndColumn: 1
-        };
-        // Initialize CalculationEngine
-        this.calculationEngineObj=new CalculationEngine(this.cellData,this.selectionCoordinates);
-
+        // Initialize manager for handling cell content
         this.CellsManagerObj = new CellsManager(this.cellData);
 
-        
-        // Initialize UndoRedoManager
-        this.undoRedoManager= new UndoRedoManager();
-        
-        // Initialize ScrollManager
+        // Undo/redo history stack manager
+        this.undoRedoManager = new UndoRedoManager();
+
+        // Scroll state and viewport offsets
         this.ScrollManagerObj = new ScrollManager();
-        
-        // Initialize RowsManager
+
+        // RowsManager controls row height, scrolling, and virtualized row rendering
         this.RowsManagerObj = new RowsManager(
             this.rowData,
-            0,
-            this.ScrollManagerObj.verticalNum,
-            this.selectionCoordinates,
+            0, // initially scrolled to row 0
+            this.ScrollManagerObj.verticalNum, // number of visible rows
+            this.selectionCoordinates
         );
-        
-        // Initialize ColumnsManager
+
+        // ColumnsManager controls column width, scrolling, and rendering
         this.ColumnsManagerObj = new ColumnsManager(
             this.columnData,
             0,
-            this.ScrollManagerObj.horizontalNum,
+            this.ScrollManagerObj.horizontalNum, // number of visible columns
             this.selectionCoordinates
         );
-        
-        // Initialize TilesManager
+
+        // TilesManager handles cell rendering, merging selection + data
         this.TilesManagerObj = new TilesManager(
             this.RowsManagerObj.rowsPositionPrefixSumArr,
             this.ColumnsManagerObj.visibleColumnsPrefixSum,
@@ -122,27 +80,28 @@ class App {
             this.ScrollManagerObj.horizontalNum,
             this.selectionCoordinates,
             this.CellsManagerObj,
-            undefined, // Placeholder for future use
-            undefined, // Placeholder for future use
+            undefined, // formulaManager (future)
+            undefined, // dependencyGraph (future)
             this.RowsManagerObj.marginTop,
             this.ColumnsManagerObj.marginLeft
         );
-        // Initialize JSONUpload
-        this.JSONUploadObj= new JSONUpload(this.cellData,this.TilesManagerObj,this.RowsManagerObj,this.ColumnsManagerObj);
 
-        
-        // Initialize ResizeManager
-        // this.ResizeManagerObj = new ResizeManager(
-        //     this.RowsManagerObj,
-        //     this.TilesManagerObj,
-        //     this.ColumnsManagerObj,
-        //     this.ifRowResizePointerDown,
-        //     this.ifColumnResizeOn,
-        //     this.ifColumnResizePointerDown,
-        //     this.undoRedoManager
-        // );
+        // Enables uploading JSON file to populate spreadsheet
+        this.JSONUploadObj = new JSONUpload(
+            this.cellData,
+            this.TilesManagerObj,
+            this.RowsManagerObj,
+            this.ColumnsManagerObj
+        );
 
-        this.InteractionManagerObj=new InteractionManager(
+        // Calculation engine for sum, average, count, min, max in selection
+        this.calculationEngineObj = new CalculationEngine(
+            this.cellData,
+            this.selectionCoordinates
+        );
+
+        // DOM-level event manager for clicks, drag-selection, input, etc.
+        this.InteractionManagerObj = new InteractionManager(
             this.RowsManagerObj,
             this.ColumnsManagerObj,
             this.TilesManagerObj,
@@ -152,11 +111,14 @@ class App {
             this.calculationEngineObj
         );
 
-        this.ScrollManagerObj.initializeManager(this.ColumnsManagerObj, this.RowsManagerObj, this.TilesManagerObj);
-
+        // ScrollManager is aware of Rows/Columns and renders visible viewport
+        this.ScrollManagerObj.initializeManager(
+            this.ColumnsManagerObj,
+            this.RowsManagerObj,
+            this.TilesManagerObj
+        );
     }
-
 }
 
-// Instantiates the App
+// Launch spreadsheet application
 new App();
